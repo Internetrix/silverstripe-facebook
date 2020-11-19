@@ -1,0 +1,6 @@
+---
+name: irxfacebook
+---
+Silverstripe\SiteConfig\SiteConfig:
+  extensions:
+    - Internetrix\Facebook\Extensions\FacebookSiteConfigExtension

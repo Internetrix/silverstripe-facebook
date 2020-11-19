@@ -1,0 +1,39 @@
+{
+  "name": "internetrix/silverstripe-facebook",
+  "description": "Implements a Facebook login system to generate Access Tokens",
+  "type": "silverstripe-vendormodule",
+  "homepage": "https://gitlab.internetrix.net/internetrix/silverstripe-facebook",
+  "keywords": ["silverstripe", "module", "facebook"],
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Drew Carrette",
+      "email": "drew.carrette@internetrix.com.au"
+    }
+  ],
+  "support": {
+    "issues": "https://gitlab.internetrix.net/internetrix/silverstripe-facebook/issues"
+  },
+  "require": {
+    "silverstripe/vendor-plugin": "^1.0",
+    "silverstripe/framework": "~4.0",
+    "facebook/graph-sdk": "^5.7",
+    "unclecheese/display-logic": "^2.0.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.7",
+    "squizlabs/php_codesniffer": "^3.0"
+  },
+  "extra": {
+    "installer-name": "template"
+  },
+  "autoload": {
+    "psr-4": {
+      "Internetrix\\Facebook\\": "src/",
+      "Internetrix\\Facebook\\Tests\\": "tests/"
+    }
+  },
+  "license": "BSD-3-Clause",
+  "prefer-stable": true,
+  "minimum-stability": "dev"
+}
