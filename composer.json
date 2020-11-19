@@ -2,7 +2,7 @@
   "name": "internetrix/silverstripe-facebook",
   "description": "Implements a Facebook login system to generate Access Tokens",
   "type": "silverstripe-vendormodule",
-  "homepage": "https://gitlab.internetrix.net/internetrix/silverstripe-facebook",
+  "homepage": "https://github.com/Internetrix/silverstripe-facebook/",
   "keywords": ["silverstripe", "module", "facebook"],
   "license": "BSD-3-Clause",
   "authors": [
@@ -12,7 +12,7 @@
     }
   ],
   "support": {
-    "issues": "https://gitlab.internetrix.net/internetrix/silverstripe-facebook/issues"
+    "issues": "https://github.com/Internetrix/silverstripe-facebook/issues"
   },
   "require": {
     "silverstripe/vendor-plugin": "^1.0",
