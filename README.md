@@ -38,6 +38,19 @@ Internetrix\Facebook\Config:
 
 Schedule the `facebook-validation` task to run at minimum weekly to allow refreshing of Access Tokens.
 
+You can access the token for your projects via the following:
+
+```
+$siteConfig = SiteConfig::current_site_config();
+
+/** @var AccessToken $accessToken */
+$accessToken = unserialize($siteConfig->FacebookAccessToken);
+
+if ($accessToken && is_a($accessToken, AccessToken::class)) {
+    $accessToken = $accessToken->getValue();
+}
+```
+
 ## TODO
 
 * Implement proper error handling and reporting for User

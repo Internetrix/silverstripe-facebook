@@ -1,0 +1,6 @@
+---
+name: irxfacebookroutes
+---
+SilverStripe\Control\Director:
+  rules:
+    'facebook//$Action': 'Internetrix\Facebook\Controllers\FacebookConnectionController'
