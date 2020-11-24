@@ -1,4 +1,4 @@
-# Module Template
+# Internetrix / Silverstripe Facebook
 
 [![Build Status](link)]
 [![Scrutinizer Code Quality](link)]
