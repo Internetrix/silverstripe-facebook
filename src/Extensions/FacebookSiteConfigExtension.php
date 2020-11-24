@@ -41,11 +41,12 @@ class FacebookSiteConfigExtension extends DataExtension
             LiteralField::create('SocialDesc', '<p class="message">Login via the link below to allow this application to retrieve your Page posts.</p>')
         ]);
 
-        // Enable this for debugging
-//        $fields->addFieldToTab('Root.Facebook', TextareaField::create(
-//            'FacebookAccessToken',
-//            'Access Token'
-//        ));
+        if (Director::isDev()) {
+            $fields->addFieldToTab('Root.Facebook', TextareaField::create(
+                'FacebookAccessToken',
+                'Access Token'
+            ));
+        }
 
         $connection = $this->createFacebookConnection();
 

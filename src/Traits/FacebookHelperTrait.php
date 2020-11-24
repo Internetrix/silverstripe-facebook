@@ -4,6 +4,7 @@ namespace Internetrix\Facebook\Traits;
 
 use Facebook\Authentication\AccessToken;
 use Facebook\Facebook;
+use GuzzleHttp\Client;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\SiteConfig\SiteConfig;
 
@@ -54,5 +55,23 @@ trait FacebookHelperTrait
         }
 
         return null;
+    }
+
+    /**
+     * @param $profileID
+     * @param $accessToken
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getPageAccessToken($profileID, $accessToken)
+    {
+        $client = new Client();
+        $request = $client->request('GET', 'https://graph.facebook.com/' . $profileID . '?fields=access_token&access_token=' . $accessToken);
+        $response = $request->getBody()->getContents();
+        $accessToken = json_decode($response, true)['access_token'];
+
+        if ($accessToken) {
+            return $accessToken;
+        }
     }
 }
