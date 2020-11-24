@@ -28,7 +28,15 @@ composer require internetrix/silverstripe-facebook
 
 ## Quickstart
 
-Please include the following configs to enable the connection:
+This module requires the domain to be using HTTPS, as per Facebook's security requirements.
+You will also need to add the following domain (replaced with your details) to the Valid OAuth Redirect URIs in the App Settings:
+
+``` 
+https://{yourdomain}/facebook/login
+e.g. https://local.com/facebook/login
+```
+
+Please include the following config to a .yml file to enable the connection:
 
 ```
 Internetrix\Facebook\Config:
