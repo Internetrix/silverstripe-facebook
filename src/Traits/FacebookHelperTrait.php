@@ -51,7 +51,7 @@ trait FacebookHelperTrait
         $accessToken = unserialize($siteConfig->FacebookAccessToken);
 
         if ($accessToken && is_a($accessToken, AccessToken::class)) {
-            return $accessToken->getValue();
+            return $accessToken;
         }
 
         return null;
