@@ -74,4 +74,41 @@ trait FacebookHelperTrait
             return $accessToken;
         }
     }
+
+    /**
+     * @param $accessToken
+     * @throws \Facebook\Exceptions\FacebookSDKException
+     */
+    public function refreshAccessToken($accessToken)
+    {
+        $connection = $this->createFacebookConnection();
+        $oAuth2Client = $connection->getOAuth2Client();
+
+        $newToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
+
+        // If no expiry has been set, create a new token with a set expiry date of +3 months
+        if (!$newToken->getExpiresAt()) {
+            $newToken = new AccessToken($newToken->getValue(), strtotime('+3 months'));
+        }
+
+        $siteConfig = SiteConfig::current_site_config();
+        $siteConfig->FacebookAccessToken = serialize($newToken);
+        $siteConfig->write();
+    }
+
+    /**
+     * @param $accessToken
+     * @return bool
+     */
+    public function getRefreshPeriod($accessToken)
+    {
+        $expiryDate = $accessToken->getExpiresAt()->format('d-m-Y');
+        $period = date('d-m-Y', strtotime('-14 days', strtotime($expiryDate)));
+
+        if (strtotime($period) <= strtotime("today")) {
+            return true;
+        }
+
+        return false;
+    }
 }

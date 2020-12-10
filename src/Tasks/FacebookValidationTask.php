@@ -39,24 +39,10 @@ class FacebookValidationTask extends BuildTask
         if (is_a($accessToken, AccessToken::class)) {
             DB::alteration_message('Found a valid token.');
 
-            $expiryDate = $accessToken->getExpiresAt()->format('d-m-Y');
-            $weekBefore = date('d-m-Y', strtotime('-7 days', strtotime($expiryDate)));
-
-            if (strtotime($weekBefore) <= strtotime("today")) {
+            if ($this->getRefreshPeriod($accessToken)) {
                 DB::alteration_message('Token is about to expire. Refreshing token.');
 
-                $connection = $this->createFacebookConnection();
-                $oAuth2Client = $connection->getOAuth2Client();
-
-                $newToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
-
-                // If no expiry has been set, create a new token with a set expiry date of +3 months
-                if (!$newToken->getExpiresAt()) {
-                    $newToken = new AccessToken($newToken->getValue(), strtotime('+3 months'));
-                }
-
-                $siteConfig->FacebookAccessToken = serialize($newToken);
-                $siteConfig->write();
+                $this->refreshAccessToken();
 
                 DB::alteration_message('Token successfully refreshed.');
             } else {
