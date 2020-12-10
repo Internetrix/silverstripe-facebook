@@ -42,7 +42,7 @@ class FacebookValidationTask extends BuildTask
             if ($this->getRefreshPeriod($accessToken)) {
                 DB::alteration_message('Token is about to expire. Refreshing token.');
 
-                $this->refreshAccessToken();
+                $this->refreshAccessToken($accessToken);
 
                 DB::alteration_message('Token successfully refreshed.');
             } else {
