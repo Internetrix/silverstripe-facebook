@@ -97,24 +97,14 @@ class FacebookSiteConfigExtension extends DataExtension
             CompositeField::create([
                 CheckboxField::create('FacebookOverride', 'Manual Override'),
                 Wrapper::create(
-                    TextareaField::create('ManualToken', 'Insert Manual Token')->setDescription('Developer tool; allows manual setting of an Access Token')
+                    TextareaField::create('ManualToken', 'Insert Manual Token')->setDescription('Developer tool; allows manual setting of an Access Token'),
+                    Textfield::create(
+                        'ManualExpiryDate',
+                        'Insert Manual Expiry Date'
+                    )->setDescription('E.g. 15-01-2021')
                 )->displayIf('FacebookOverride')->isChecked()->end()
             ])
         ]);
-
-        if (Director::isDev()) {
-            $fields->addFieldToTab('Root.Facebook',
-                CompositeField::create([
-                    TextareaField::create(
-                        'FacebookAccessToken',
-                        'Access Token'
-                    ),
-                    Textfield::create(
-                        'FacebookExpiryDate',
-                        'Expiry Date'
-                    )
-                ]));
-        }
     }
 
     public function onBeforeWrite()
@@ -124,10 +114,16 @@ class FacebookSiteConfigExtension extends DataExtension
         $override = $this->owner->getField('FacebookOverride');
         if ($override) {
             $newToken = $this->owner->getField('ManualToken');
+            $newDate = $this->owner->getField('ManualExpiryDate');
 
             if ($newToken) {
-                $accessToken = new AccessToken($newToken, strtotime('+3 months'));
-                $this->owner->FacebookAccessToken = serialize($accessToken);
+                $this->owner->FacebookAccessToken = $newToken;
+            }
+
+            if ($newDate) {
+                $this->owner->FacebookExpiryDate = strtotime($newDate);
+            } else {
+                $this->owner->FacebookExpiryDate = strtotime('+3 months');
             }
         }
     }
