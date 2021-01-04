@@ -34,7 +34,7 @@ class FacebookValidationTask extends BuildTask
         set_time_limit(0);
 
         $siteConfig = SiteConfig::current_site_config();
-        $accessToken = unserialize($siteConfig->FacebookAccessToken);
+        $accessToken = $this->getSiteAccessToken();
 
         if (is_a($accessToken, AccessToken::class)) {
             DB::alteration_message('Found a valid token.');

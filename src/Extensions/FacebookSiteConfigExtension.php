@@ -28,7 +28,8 @@ class FacebookSiteConfigExtension extends DataExtension
     use FacebookHelperTrait;
 
     private static $db = [
-        'FacebookAccessToken' => 'Text'
+        'FacebookAccessToken' => 'Text',
+        'FacebookExpiryDate' => 'Text',
     ];
 
     /**
@@ -40,13 +41,6 @@ class FacebookSiteConfigExtension extends DataExtension
             HeaderField::create('SocialHeader', 'Facebook Connection'),
             LiteralField::create('SocialDesc', '<p class="message">Login via the link below to allow this application to retrieve your Page posts.</p>')
         ]);
-
-        if (Director::isDev()) {
-            $fields->addFieldToTab('Root.Facebook', TextareaField::create(
-                'FacebookAccessToken',
-                'Access Token'
-            ));
-        }
 
         $connection = $this->createFacebookConnection();
 
@@ -74,8 +68,7 @@ class FacebookSiteConfigExtension extends DataExtension
             '));
 
             if ($this->owner->FacebookAccessToken) {
-                /** @var AccessToken $accessToken */
-                $accessToken = unserialize($this->owner->FacebookAccessToken);
+                $accessToken = $this->getSiteAccessToken();
 
                 if (is_a($accessToken, AccessToken::class)) {
                     if ($accessToken->isExpired()) {
@@ -108,6 +101,20 @@ class FacebookSiteConfigExtension extends DataExtension
                 )->displayIf('FacebookOverride')->isChecked()->end()
             ])
         ]);
+
+        if (Director::isDev()) {
+            $fields->addFieldToTab('Root.Facebook',
+                CompositeField::create([
+                    TextareaField::create(
+                        'FacebookAccessToken',
+                        'Access Token'
+                    ),
+                    Textfield::create(
+                        'FacebookExpiryDate',
+                        'Expiry Date'
+                    )
+                ]));
+        }
     }
 
     public function onBeforeWrite()

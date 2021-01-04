@@ -6,6 +6,7 @@ use Facebook\Authentication\AccessToken;
 use Facebook\Facebook;
 use GuzzleHttp\Client;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Dev\Debug;
 use SilverStripe\SiteConfig\SiteConfig;
 
 trait FacebookHelperTrait
@@ -46,12 +47,11 @@ trait FacebookHelperTrait
     public function getSiteAccessToken()
     {
         $siteConfig = SiteConfig::current_site_config();
+        $accessTokenString = $siteConfig->FacebookAccessToken;
+        $expiryDateVal = $siteConfig->FacebookExpiryDate;
 
-        /** @var AccessToken $accessToken */
-        $accessToken = unserialize($siteConfig->FacebookAccessToken);
-
-        if ($accessToken && is_a($accessToken, AccessToken::class)) {
-            return $accessToken;
+        if ($accessTokenString && $expiryDateVal) {
+            return new AccessToken($accessTokenString, $expiryDateVal);
         }
 
         return null;
@@ -92,7 +92,8 @@ trait FacebookHelperTrait
         }
 
         $siteConfig = SiteConfig::current_site_config();
-        $siteConfig->FacebookAccessToken = serialize($newToken);
+        $siteConfig->FacebookAccessToken = $newToken->getValue();
+        $siteConfig->FacebookExpiryDate = strtotime('+3 months');
         $siteConfig->write();
     }
 

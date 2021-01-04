@@ -61,7 +61,8 @@ class FacebookConnectionController extends Controller
         }
 
         $siteConfig = SiteConfig::current_site_config();
-        $siteConfig->FacebookAccessToken = serialize($accessToken);
+        $siteConfig->FacebookAccessToken = $accessToken->getValue();
+        $siteConfig->FacebookExpiryDate = strtotime('+3 months');
         $siteConfig->write();
 
         Controller::curr()->redirect('/admin/settings');
