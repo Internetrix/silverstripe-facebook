@@ -48,10 +48,9 @@ trait FacebookHelperTrait
     {
         $siteConfig = SiteConfig::current_site_config();
         $accessTokenString = $siteConfig->FacebookAccessToken;
-        $expiryDateVal = $siteConfig->FacebookExpiryDate;
 
-        if ($accessTokenString && $expiryDateVal) {
-            return new AccessToken($accessTokenString, $expiryDateVal);
+        if ($accessTokenString) {
+            return new AccessToken($accessTokenString, 0);
         }
 
         return null;
@@ -79,7 +78,7 @@ trait FacebookHelperTrait
      * @param $accessToken
      * @throws \Facebook\Exceptions\FacebookSDKException
      */
-    public function refreshAccessToken($accessToken)
+    public function createLongAccessToken($accessToken)
     {
         $connection = $this->createFacebookConnection();
         $oAuth2Client = $connection->getOAuth2Client();
@@ -92,9 +91,24 @@ trait FacebookHelperTrait
         }
 
         $siteConfig = SiteConfig::current_site_config();
-        $siteConfig->FacebookAccessToken = $newToken->getValue();
+        $siteConfig->FacebookLongToken = $newToken->getValue();
         $siteConfig->FacebookExpiryDate = strtotime('+3 months');
         $siteConfig->write();
+    }
+
+    public function getLongAccessToken()
+    {
+        $siteConfig = SiteConfig::current_site_config();
+
+        if (!$siteConfig->FacebookLongToken) {
+            if ($this->getSiteAccessToken()) {
+                $this->createLongAccessToken($this->getSiteAccessToken());
+            } else {
+                return null;
+            }
+        }
+
+        return new AccessToken($siteConfig->FacebookLongToken, $siteConfig->FacebookExpiryDate);
     }
 
     /**

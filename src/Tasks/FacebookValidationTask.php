@@ -34,15 +34,20 @@ class FacebookValidationTask extends BuildTask
         set_time_limit(0);
 
         $siteConfig = SiteConfig::current_site_config();
-        $accessToken = $this->getSiteAccessToken();
+        $accessToken = $this->getAccessToken();
+        $longToken = $this->getLongAccessToken();
 
-        if (is_a($accessToken, AccessToken::class)) {
+        if (is_a($longToken, AccessToken::class)) {
             DB::alteration_message('Found a valid token.');
 
-            if ($this->getRefreshPeriod($accessToken)) {
-                DB::alteration_message('Token is about to expire. Refreshing token.');
+            if ($this->getRefreshPeriod($longToken)) {
+                DB::alteration_message('Token is about to expire.');
 
-                $this->refreshAccessToken($accessToken);
+                if ($siteConfig->FacebookPermanent) {
+                    $this->createLongAccessToken($accessToken);
+                } else {
+                    // todo: notify user to re-verify
+                }
 
                 DB::alteration_message('Token successfully refreshed.');
             } else {

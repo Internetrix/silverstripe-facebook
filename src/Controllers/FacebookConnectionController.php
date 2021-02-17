@@ -43,16 +43,6 @@ class FacebookConnectionController extends Controller
 
         $oAuth2Client = $fb->getOAuth2Client();
 
-        if (!$accessToken->isLongLived()) {
-            // Exchanges a short-lived access token for a long-lived one
-            try {
-                $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
-            } catch (Facebook\Exception\SDKException $e) {
-                echo "<p>Error getting long-lived access token: " . $e->getMessage() . "</p>\n\n";
-                exit;
-            }
-        }
-
         // If no expiry has been set, create a new token with a set expiry date of +3 months
         if (!$accessToken->getExpiresAt()) {
             $setExpiry = new \DateTime();
@@ -64,6 +54,8 @@ class FacebookConnectionController extends Controller
         $siteConfig->FacebookAccessToken = $accessToken->getValue();
         $siteConfig->FacebookExpiryDate = strtotime('+3 months');
         $siteConfig->write();
+
+        $this->createLongAccessToken($accessToken);
 
         Controller::curr()->redirect('/admin/settings');
     }
