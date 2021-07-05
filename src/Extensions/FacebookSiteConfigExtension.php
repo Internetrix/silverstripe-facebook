@@ -28,10 +28,8 @@ class FacebookSiteConfigExtension extends DataExtension
     use FacebookHelperTrait;
 
     private static $db = [
-        'FacebookAccessToken'   => 'Text',
-        'FacebookLongToken'     => 'Text',
-        'FacebookExpiryDate'    => 'Varchar(10)',
-        'FacebookPermanent'    => 'Boolean',
+        'FacebookAccessToken' => 'Text',
+        'FacebookExpiryDate' => 'Text',
     ];
 
     /**
@@ -44,13 +42,8 @@ class FacebookSiteConfigExtension extends DataExtension
             LiteralField::create('SocialDesc', '<p class="message">Login via the link below to allow this application to retrieve your Page posts.</p>')
         ]);
 
-        $accessToken = $this->getSiteAccessToken() ? $this->getSiteAccessToken()->getValue() : null;
-        $longToken = $this->getLongAccessToken() ? $this->getLongAccessToken()->getValue() : null;
-        $expiresAt = $longToken ? $this->getLongAccessToken()->getExpiresAt()->format('d-m-Y') : null;
-
         $connection = $this->createFacebookConnection();
 
-        $permissions = [];
         if ($connection) {
             $helper = $connection->getRedirectLoginHelper();
 
@@ -64,55 +57,59 @@ class FacebookSiteConfigExtension extends DataExtension
             $loginUrl = $helper->getLoginUrl(Director::absoluteBaseURL() . 'facebook/login', $permissions);
 
             $fields->addFieldToTab('Root.Facebook', LiteralField::create('LoginLink', '
+                <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
                 <div class="form-group field textarea">
                     <label id="title-Form_EditForm_FacebookLoginButton" class="form__field-label"></label>
                     <div class="form__field-holder">
                          <a href="' . $loginUrl . '">
-                            <div class="fb-login-button" data-size="large" data-button-type="continue_with" data-layout="default">Continue with Facebook</div>
+                            <div class="facebook-button"><i class="fab fa-facebook-square"></i> Continue with Facebook</div>
                          </a>
                     </div>
                 </div>
             '));
-        } else {
-            $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message warning">Please define the Public and Secret token configs to enable login.</p>');
-        }
 
-        if ($this->getLongAccessToken()) {
-            if ($this->getRefreshPeriod($this->getLongAccessToken())) {
-                $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message warning">Your access will expire soon. Please re-authorise.</p>');
-            } else {
-                if (strtotime($expiresAt) < strtotime("today")) {
-                    $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message warning">Your access has expired. Please re-authorise.</p>');
+            if ($this->owner->FacebookAccessToken) {
+                $accessToken = $this->getSiteAccessToken();
+
+                if (is_a($accessToken, AccessToken::class)) {
+                    if ($accessToken->isExpired()) {
+                        $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message error">Facebook access has expired. Please login again to reauthorise.</p>');
+                    } else if ($accessToken->getExpiresAt()->getTimestamp() < strtotime("-1 month")) {
+                        $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('
+<p class="message warning">Your access to the Facebook API will expire on ' . $accessToken->getExpiresAt()->format('d/m/Y') . '.
+Please click the button below to reuathorise.</p>'
+                        );
+                    } else {
+                        $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message notice">Facebook has been successfully connected.</p>');
+                    }
+
+                    $fields->addFieldsToTab('Root.Facebook', [
+                        HeaderField::create('DeveloperSocial', 'Developer Information'),
+                        CompositeField::create([
+                            TextareaField::create('Token', 'Token')->setValue($accessToken->getValue())->setReadonly(true),
+                            ReadonlyField::create('ExpiryDate', 'Expires')->setValue($accessToken->getExpiresAt()->format('d-m-Y')),
+                            TextareaField::create('TokenPermissions', 'Permissions')->setValue(implode(',', $permissions))->setReadonly(true),
+                        ])
+                    ]);
                 } else {
-                    $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message notice">Facebook has been connected.</p>');
+                    $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message error">Error: Something went wrong with the login process. Access is not authorized.</p>');
                 }
             }
+        } else {
+            $fields->fieldByName('Root.Facebook.SocialDesc')->setValue('<p class="message warning">Please define the Public and Secret token configs.</p>');
         }
 
         $fields->addFieldsToTab('Root.Facebook', [
-            HeaderField::create('DeveloperSocial', 'Developer Information'),
             CompositeField::create([
-                Wrapper::create(
-                    TextareaField::create('Token', 'Access Token')
-                        ->setValue($accessToken)
-                        ->setReadonly(true),
-                    TextareaField::create('LongToken', 'Long Access Token')
-                        ->setValue($longToken)
-                        ->setReadonly(true),
-                    ReadonlyField::create('Expiry', 'Expires')
-                        ->setValue($expiresAt)
-                )->hideIf('FacebookOverride')->isChecked()->end(),
-                Wrapper::create(
-                    TextareaField::create('FacebookAccessToken', 'Access Token'),
-                    TextareaField::create('FacebookLongToken', 'Long Access Token'),
-                    TextField::create('FacebookExpiryDate', 'Expires')
-                )->displayIf('FacebookOverride')->isChecked()->end(),
-                TextareaField::create('TokenPermissions', 'Permissions')
-                    ->setValue(implode(',', $permissions))
-                    ->setReadonly(true),
                 CheckboxField::create('FacebookOverride', 'Manual Override'),
-                CheckboxField::create('FacebookPermanent', 'Is Business Token')
-            ]),
+                Wrapper::create(
+                    TextareaField::create('ManualToken', 'Insert Manual Token')->setDescription('Developer tool; allows manual setting of an Access Token'),
+                    Textfield::create(
+                        'ManualExpiryDate',
+                        'Insert Manual Expiry Date'
+                    )->setDescription('E.g. 15-01-2021')
+                )->displayIf('FacebookOverride')->isChecked()->end()
+            ])
         ]);
     }
 
@@ -122,9 +119,17 @@ class FacebookSiteConfigExtension extends DataExtension
 
         $override = $this->owner->getField('FacebookOverride');
         if ($override) {
-            $expiry = $this->owner->getField('FacebookExpiryDate');
-            if ($expiry->isChanged()) {
-                $this->owner->FacebookExpiryDate = strtotime($expiry);
+            $newToken = $this->owner->getField('ManualToken');
+            $newDate = $this->owner->getField('ManualExpiryDate');
+
+            if ($newToken) {
+                $this->owner->FacebookAccessToken = $newToken;
+            }
+
+            if ($newDate) {
+                $this->owner->FacebookExpiryDate = strtotime($newDate);
+            } else {
+                $this->owner->FacebookExpiryDate = strtotime('+3 months');
             }
         }
     }
