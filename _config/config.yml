@@ -4,3 +4,7 @@ name: irxfacebook
 Silverstripe\SiteConfig\SiteConfig:
   extensions:
     - Internetrix\Facebook\Extensions\FacebookSiteConfigExtension
+
+SilverStripe\Admin\LeftAndMain:
+  extra_requirements_css:
+    - client/css/admin-facebook.css
