@@ -48,9 +48,10 @@ trait FacebookHelperTrait
     {
         $siteConfig = SiteConfig::current_site_config();
         $accessTokenString = $siteConfig->FacebookAccessToken;
+        $accessTokenDate = $siteConfig->FacebookExpiryDate;
 
         if ($accessTokenString) {
-            return new AccessToken($accessTokenString, 0);
+            return new AccessToken($accessTokenString, $accessTokenDate ? $accessTokenDate : 0);
         }
 
         return null;
