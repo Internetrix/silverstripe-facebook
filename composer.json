@@ -23,7 +23,7 @@
   },
   "require": {
     "silverstripe/framework": "^4 || ^5",
-    "joelbutcher/facebook-graph-sdk": "dev-6.x",
+    "joelbutcher/facebook-graph-sdk": "dev-main",
     "unclecheese/display-logic": "^2 || ^3"
   },
   "extra": {
