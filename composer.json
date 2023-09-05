@@ -11,12 +11,19 @@
       "email": "drew.carrette@internetrix.com.au"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/joelbutcher/facebook-php-graph-sdk",
+      "name": "joelbutcher/facebook-graph-sdk"
+    }
+  ],
   "support": {
     "issues": "https://github.com/Internetrix/silverstripe-facebook/issues"
   },
   "require": {
     "silverstripe/framework": "^4 || ^5",
-    "facebook/graph-sdk": "^5.7",
+    "joelbutcher/facebook-graph-sdk": "dev-6.x",
     "unclecheese/display-logic": "^2 || ^3"
   },
   "extra": {
@@ -33,3 +40,4 @@
   "prefer-stable": true,
   "minimum-stability": "dev"
 }
+https://github.com/joelbutcher/facebook-php-graph-sdk
